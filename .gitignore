@@ -1,0 +1,6 @@
+src/*.o
+*.a
+/tunnel
+/tunneld
+tests/test_*
+!tests/test_*.c
