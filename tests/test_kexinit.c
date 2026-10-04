@@ -44,8 +44,8 @@ int main(void)
 	CHECK_MEM(d.cookie, c.cookie, 16);
 	for (int i = 0; i < KI_NLISTS; i++)
 		CHECK(!strcmp(d.lists[i], client_lists[i]));
-	CHECK(kexinit_decode(w.data, w.len - 1, &d) == -1); /* truncated */
 	kexinit_free(&d);
+	CHECK(kexinit_decode(w.data, w.len - 1, &d) == -1); /* truncated */
 	wbuf_free(&w);
 
 	/* Client preference wins; enc directions negotiate independently. */
