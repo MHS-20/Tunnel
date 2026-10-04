@@ -73,6 +73,24 @@ static int dial(const char *host, int port)
 	return fd;
 }
 
+static int connect_and_run(hostkey_policy *policy, const auth_client_cfg *auth,
+			   const client_session_cfg *sess)
+{
+	transport tr;
+	int fd = dial(policy->host, policy->port);
+	if (fd < 0) {
+		fprintf(stderr, "tunnel: cannot connect to %s:%d\n", policy->host, policy->port);
+		return 255;
+	}
+	if (tr_client_start(&tr, fd, check_hostkey, policy) < 0) {
+		fprintf(stderr, "tunnel: key exchange failed\n");
+		return 255;
+	}
+	if (userauth_client(&tr, auth) < 0)
+		return 255;
+	return client_session_run(&tr, sess);
+}
+
 /* Joins argv into one command string, as ssh does. */
 static char *join_args(char **argv, int n)
 {
@@ -135,17 +153,7 @@ int main(int argc, char **argv)
 	auth.password = getenv("TUNNEL_PASSWORD");
 
 	signal(SIGPIPE, SIG_IGN);
-	int fd = dial(policy.host, policy.port);
-	if (fd < 0) {
-		fprintf(stderr, "tunnel: cannot connect to %s:%d\n", policy.host, policy.port);
-		return 255;
-	}
-	transport tr;
-	if (tr_client_start(&tr, fd, check_hostkey, &policy) < 0) {
-		fprintf(stderr, "tunnel: key exchange failed\n");
-		return 255;
-	}
-	if (userauth_client(&tr, &auth) < 0)
-		return 255;
-	return client_session_run(&tr, &sess);
+	int rc = connect_and_run(&policy, &auth, &sess);
+	free((char *)sess.command);
+	return rc;
 }
