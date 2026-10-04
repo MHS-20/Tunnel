@@ -106,6 +106,8 @@ static void on_data(server_conn *sc, channel *c, rbuf *r)
 		return;
 	}
 	put_raw(&s->to_child, p, n);
+	if (s->to_child.err) /* cannot happen while the window is honoured */
+		tr_disconnect(sc->tr, SSH_DISCONNECT_PROTOCOL_ERROR, "channel buffer overflow");
 }
 
 /* Messages addressed to an existing channel. */

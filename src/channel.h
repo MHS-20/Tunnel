@@ -10,7 +10,9 @@
 #include "transport.h"
 
 #define CHAN_MAX 16
-#define CHAN_WINDOW (2u * 1024 * 1024) /* our initial window */
+/* Our window is also the bound on data we buffer for a channel's sink,
+ * so it must fit in one wbuf. */
+#define CHAN_WINDOW ((uint32_t)BUF_MAX)
 #define CHAN_MAXPKT 32768u             /* largest data payload we accept */
 
 typedef struct {
